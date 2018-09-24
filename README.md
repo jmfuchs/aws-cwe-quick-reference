@@ -159,7 +159,7 @@ CWERuleRootMFA:
 CWERuleGuardDutyFindingAll: 
     Type: "AWS::Events::Rule"
     Properties: 
-      Name: example-all-guardduty-findings
+      Name: example-guardduty-findings-all
       Description: "All GuardDuty Findings"
       EventPattern: 
         source:
@@ -167,4 +167,22 @@ CWERuleGuardDutyFindingAll:
         detail-type:
         - "GuardDuty Finding"
       State: "ENABLED"
- ```
+```
+### Specific Finding
+ 
+```
+ CWERuleGuardDutyFindingSSHBruteForce: 
+    Type: "AWS::Events::Rule"
+    Properties: 
+      Name: example-guardduty-finding-sshbruteforce
+      Description: "GuardDuty Finding: UnauthorizedAccess:EC2/SSHBruteForce"
+      EventPattern: 
+        source:
+        - aws.guardduty
+        detail:
+          type:
+          - "UnauthorizedAccess:EC2/SSHBruteForce"
+      State: "ENABLED"
+```
+ 
+ 
