@@ -150,3 +150,21 @@ CWERuleRootMFA:
             - DeleteVirtualMFADevice
       State: "ENABLED"
 ```
+
+## Amazon GuardDuty
+
+### All Findings
+
+```
+CWERuleGuardDutyFindingAll: 
+    Type: "AWS::Events::Rule"
+    Properties: 
+      Name: example-all-guardduty-findings
+      Description: "All GuardDuty Findings"
+      EventPattern: 
+        source:
+        - aws.guardduty
+        detail-type:
+        - "GuardDuty Finding"
+      State: "ENABLED"
+ ```
