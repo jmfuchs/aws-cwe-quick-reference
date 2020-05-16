@@ -1,12 +1,32 @@
 # AWS CloudWatch Event Rule - Quick Reference
 
-blah blah blah
+This is a quick reference for security related AWS CloudWatch Event Rule patterns.
 
 ## Root User Activity
 
 All IAM (including Root) events go to the us-east-1 region, so these CloudWatch Event Rules must be created in us-east-1 (N. Virginia).
 
 ### All Activity
+
+#### Event Pattern
+
+```
+{
+  "detail-type": [
+    "AWS Console Sign In via CloudTrail",
+    "AWS API Call via CloudTrail"
+  ],
+  "detail": {
+    "userIdentity": {
+      "type": [
+        "Root"
+      ]
+    }
+  }
+}
+```
+
+#### AWS CloudFormation Resource (YAML)
 
 ```
 CWERuleAllRootActivity: 
@@ -28,7 +48,24 @@ CWERuleAllRootActivity:
 
 ### Root Login
 
-##### Rule
+#### Event Pattern
+
+```
+{
+  "detail": {
+    "eventName": [
+      "ConsoleLogin"
+    ],
+    "userIdentity": {
+      "type": [
+        "Root"
+      ]
+    }
+  }
+}
+```
+
+#### AWS CloudFormation Resource (YAML)
 ```
 CWERuleRootLogin: 
     Type: "AWS::Events::Rule"
@@ -45,10 +82,28 @@ CWERuleRootLogin:
       State: "ENABLED"
 ```
 
+### Password Modification
 
-### Root Password Activity
+#### Event Pattern
 
-#### Password Change
+```
+{
+  "detail": {
+    "eventName": [
+      "PasswordUpdated",
+      "PasswordRecoveryRequested",
+      "PasswordRecoveryCompleted"
+    ],
+    "userIdentity": {
+      "type": [
+        "Root"
+      ]
+    }
+  }
+}
+```
+
+#### AWS CloudFormation Resource (YAML)
 
 ```
 CWERuleRootChangePassword: 
@@ -63,58 +118,31 @@ CWERuleRootChangePassword:
                 - Root
             eventName: 
             - PasswordUpdated
-      State: "ENABLED"
-```
-
-##### With SNS Target and Input Transformer
-
-```
-CWERuleRootChangePasswordSNS: 
-    Type: "AWS::Events::Rule"
-    Properties: 
-      Name: example-root-activity-password-with-target
-      Description: "Root Password Change with SNS Target"
-      EventPattern: 
-        detail:
-            userIdentity:
-                type:
-                - Root
-            eventName: 
-            - PasswordUpdated
-            - PasswordRecoveryRequested
-      State: "ENABLED"
-      Targets: 
-        - Arn: 
-            Ref: "SNSTopic"
-          Id: "SNSTopic-Root-Password-Alert"
-          InputTransformer:
-            InputTemplate: '"An attempt to change the Root password for account# <account> has been made by <source> (response: <response>). "'
-            InputPathsMap:
-              account: "$.account"
-              source: "$.detail.sourceIPAddress"
-              response: "$.detail.responseElements.PasswordUpdated"
-```
-
-#### Password Recovery
-
-```
-CWERuleRootPasswordRecovery: 
-    Type: "AWS::Events::Rule"
-    Properties: 
-      Name: example-root-activity-password-recovery
-      Description: "Root Password Recovery"
-      EventPattern: 
-        detail:
-            userIdentity:
-                type:
-                - Root
-            eventName: 
             - PasswordRecoveryRequested
             - PasswordRecoveryCompleted
       State: "ENABLED"
 ```
 
-#### Email Update
+### Email Update
+
+#### Event Pattern
+
+```
+{
+  "detail": {
+    "eventName": [
+      "EmailUpdated"
+    ],
+    "userIdentity": {
+      "type": [
+        "Root"
+      ]
+    }
+  }
+}
+```
+
+#### AWS CloudFormation Resource (YAML)
 
 ```
 CWERuleRootEmailUpdate: 
@@ -132,7 +160,68 @@ CWERuleRootEmailUpdate:
       State: "ENABLED"
 ```
 
-#### MFA Modification
+### Security Questions or Contacts Modification 
+
+#### Event Pattern
+
+```
+{
+  "detail": {
+    "eventName": [
+      "SetAdditionalContacts",
+      "SetSecurityQuestions"
+    ],
+    "userIdentity": {
+      "type": [
+        "Root"
+      ]
+    }
+  }
+}
+```
+
+#### AWS CloudFormation Resource (YAML)
+
+```
+CWERuleAccountSettingsUpdate: 
+    Type: "AWS::Events::Rule"
+    Properties: 
+      Name: example-root-activity-question-contacts-update
+      Description: "Root Account settings update"
+      EventPattern: 
+        detail:
+            userIdentity:
+                type:
+                - Root
+            eventName: 
+            - SetAdditionalContacts
+            -SetSecurityQuestions
+      State: "ENABLED"
+```
+
+### MFA Modification
+
+#### Event Pattern
+
+```
+{
+  "detail": {
+    "eventName": [
+      "CreateVirtualMFADevice",
+      "EnableMFADevice",
+      "DeactivateMFADevice",
+      "DeleteVirtualMFADevice"
+    ],
+    "userIdentity": {
+      "type": [
+        "Root"
+      ]
+    }
+  }
+}
+```
+
+#### AWS CloudFormation Resource (YAML)
 
 ```
 CWERuleRootMFA: 
@@ -147,6 +236,8 @@ CWERuleRootMFA:
                 - Root
             eventName: 
             - CreateVirtualMFADevice
+            - EnableMFADevice
+            - DeactivateMFADevice
             - DeleteVirtualMFADevice
       State: "ENABLED"
 ```
